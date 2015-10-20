@@ -196,7 +196,7 @@ public class TableDrawing {
 		
 		g2d.drawImage(firstImg, x, y, null);
 		
-		ImageIO.write(finalImg, "png", new File("/Users/martella/Documents/games/mtg/images/t_" + smolW + "_" + smolH + "_" + x + "_" + y + ".png"));
+		ImageIO.write(finalImg, "png", new File(prop.getProperty("mtg.directory") + "images/t_" + smolW + "_" + smolH + "_" + x + "_" + y + ".png"));
 	}
 	
 /*
