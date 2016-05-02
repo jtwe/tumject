@@ -15,6 +15,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +28,8 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+
+import mtg.CardFilter.Direction;
 
 public class MtgJson {
 // http://mtgjson.com/
@@ -173,7 +176,7 @@ public class MtgJson {
 			jo = jr.readObject();
 		}
 		
-		int maxSize = 250;
+		int maxSize = 150;
 
 		while (cards.size()<52 || cards.size()>maxSize) {
 			if (firstFilters!=null) {
@@ -188,7 +191,7 @@ public class MtgJson {
 				System.out.println("Cards: " + cards.size());
 				System.out.println();
 			}
-			maxSize+=50;
+			maxSize+=25;
 		}
 
 		caption = new StringBuffer();
@@ -495,6 +498,7 @@ public class MtgJson {
 					{"Return to Ravnica block", "RTR", "GTC", "DGM"},
 					{"Theros block", "THS", "BNG", "JOU"},
 					{"Tarkir block", "KTK", "FRF", "DTK"},
+					{"Battle for Zendikar block", "BFZ", "OGW", "EXP"},
 			};
 			String[] block = blockSets[r.nextInt(blockSets.length)];
 			List<String> sets = new ArrayList<String>();
@@ -565,9 +569,27 @@ public class MtgJson {
 		return toRet.toArray(new CardFilter[]{});
 	}
 	
-	private CardFilter[] chooseSetFilters() {
+	public static CardFilter[] choosePresetFilters(Properties prop) {
+		return new CardFilter[]{new FilterIsRealCard(), new FilterSupplemental(null, prop.getProperty("mtg.directory"))};
+//		return new CardFilter[]{new FilterVanilla(), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterIsRealCard(), new FilterSet("BFZ", "OGW", "EXP"), new FilterCardType("Enchantment", "Artifact", "Land")};
+//		return new CardFilter[]{new FilterSet("ISD", "DKA", "AVR").setDescription("Innistrad block"), new FilterLayout("double-faced").setDescription("double-faced"), new FilterIsRealCard()}; 
+//		return new CardFilter[]{new FilterSnowy(), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterCardType("Planeswalker").setDescription("Planeswalker"), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterCardType("Sliver"), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterRomantic(), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterIsRealCard(), new FilterArtist("Richard Kane Ferguson")}; // or Christopher Rush, Wayne Reynolds, Drew Tucker, Kaja Foglio
+//		return new CardFilter[]{new FilterSet("UGL", "UNH").setDescription("foolish cards")};
+//		return new CardFilter[]{new FilterColorCount(Direction.GREATER_THAN_OR_EQUAL_TO, 2).setDescription("multicolored"), new FilterSet("KTK", "FRF").setDescription("Khans of Tarkir / Fate Reforged"), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterSet("CHR").setDescription("Chronicles"), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterCardTitle("time", "temporal", "hour", "day", "year").setDescription("time-related"), new FilterIsRealCard()};
+	}
+	
+	private static CardFilter[] chooseSetFilters() {
 //		return new CardFilter[]{new FilterIsRealCard()};
-		return new CardFilter[]{new FilterIsRealCard(), new FilterSet("MRD")};
+//		return new CardFilter[]{new FilterIsRealCard(), new FilterSet("BFZ", "OGW", "EXP"), new FilterCardType("Instant", "Sorcery")};
+//		return new CardFilter[]{new FilterIsRealCard(), new FilterSet("BFZ", "OGW", "EXP"), new FilterCardType("Creature", "Planeswalker")};
+//		return new CardFilter[]{new FilterIsRealCard(), new FilterSet("BFZ", "OGW", "EXP"), new FilterCardType("Enchantment", "Artifact", "Land")};
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterSet("USG", "ULG", "UDS"), new FilterColorCount(Direction.GREATER_THAN_OR_EQUAL_TO, 2)};
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterCmc(Direction.LESS_THAN_OR_EQUAL_TO, 2), new FilterColor("Blue").invert(), new FilterColorCount(Direction.LESS_THAN_OR_EQUAL_TO, 1), new FilterCardType("Land")}
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterCardType("Legendary"), new FilterCardType("Creature").invert()};
@@ -576,6 +598,8 @@ public class MtgJson {
 
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterRarity("Mythic Rare").setDescription("mythic rare"), new FilterSetType("reprint")}; //new FilterSetType("core", "expansion")};
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterSetType("box")}; 
+//		return new CardFilter[]{new FilterRomantic(), new FilterIsRealCard()};
+		return choosePresetFilters(null);
 	}
 	
 	////////////////////////////////
@@ -615,6 +639,7 @@ public class MtgJson {
 	}
 	
 	public static void main(String[] args) throws IOException {
+		// The main main method, for testing the filters. 
 		String[] props = getProperties(args[0]);
 		MtgJson mj = new MtgJson(props[0], props[1]);
 
@@ -622,13 +647,14 @@ public class MtgJson {
 		JsonObject jo = jr.readObject();
 
 		mj.setSpread(Spread.THREE_CARD);
-		List<Card> cards = mj.getCards(jo, new CardFilter[]{new FilterIsRealCard(), new FilterSet("BFZ") }, false, true);
+		List<Card> cards = mj.getCards(jo, chooseSetFilters(), false, false);
+		int i=0; 
 		for (Card card : cards) {
-			System.out.println(card);
+			i++;
+			System.out.println(i + ": " + card);
 		}
-
 	}
-	
+
 	static class CountedString implements Comparable {
 		private String val;
 		private Integer count;
@@ -841,5 +867,60 @@ public class MtgJson {
 		System.out.println(td.generateImage());
 	}
 	
+
+	public static void mainCountArtists(String[] args) throws IOException {
+		// Counts artists
+		String[] props = getProperties(args[0]);
+
+		String filename = props[0] + "AllSets-x.json";
+		JsonReader jr = Json.createReader(new InputStreamReader(new FileInputStream(filename), "UTF8"));
+		JsonObject jo = jr.readObject();
+
+		CardFilter[] cardFilter = new CardFilter[]{new FilterIsRealCard()};
+		
+		Set<String> seenImages = new HashSet<String>();
+		Map<String, Set<String>> artistCounts = new HashMap<String, Set<String>>();
+
+		for (String setId : jo.keySet()) {
+			JsonObject setObject = jo.getJsonObject(setId);
+
+			JsonArray cardArray = setObject.getJsonArray("cards");
+
+			for (int j=0; j<cardArray.size(); j++) {
+				JsonObject cardObject = (JsonObject)cardArray.get(j);
+
+				if (!isOk(cardObject, setId, setObject, cardFilter)) continue;
+
+				String imageName = cardObject.getString("imageName");
+				if (seenImages.contains(imageName)) continue;
+				seenImages.add(imageName);
+				
+				String cardName = cardObject.getString("name");
+				String artistName = cardObject.getString("artist");
+				Set<String> artistCount = artistCounts.get(artistName);
+				if (artistCount==null) {
+					artistCount = new HashSet<String>();
+					artistCounts.put(artistName, artistCount);
+				}
+				artistCount.add(cardName);
+			}
+		}
+
+		List<Object[]> artistCountList = new ArrayList<Object[]>();
+		for (String key : artistCounts.keySet()) artistCountList.add(new Object[]{key, artistCounts.get(key).size()});
+		artistCountList.sort(new Comparator<Object[]>(){
+			@Override
+			public int compare(Object[] o1, Object[] o2) {
+				Integer i1 = (Integer)o1[1], i2 = (Integer)o2[1];
+				if (!i1.equals(i2)) return i2.compareTo(i1);
+				String s1 = (String)o1[0], s2 = (String)o2[0];
+				return s1.compareTo(s2);
+			}});
+		
+		for (Object[] oa : artistCountList) {
+			System.out.println(oa[0] + ", " + oa[1]);
+		}
+	}
+
 
 }

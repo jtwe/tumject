@@ -4,8 +4,11 @@ import com.tumblr.jumblr.JumblrClient;
 import com.tumblr.jumblr.types.*;
 
 import mtg.CardFilter;
+import mtg.FilterCardType;
 import mtg.FilterIsRealCard;
+import mtg.FilterSet;
 import mtg.FilterSupplemental;
+import mtg.FilterVanilla;
 import mtg.MtgJson;
 import mtg.MtgJson.Spread;
 
@@ -45,7 +48,8 @@ public class HelloTumblr {
 //		dumpPosts(blog);
 //		dumpQueue(client.blogInfo(prop.getProperty("tumblr.blogname")));
 
-		postTarot(prop, client, Spread.THREE_CARD, 1);
+//		postTarot(prop, client);
+		postTarot(prop, client, Spread.THREE_CARD, 5);
 	}
 
 	// Gotta replace — with &mdash; .  Probably others too.
@@ -88,6 +92,38 @@ public class HelloTumblr {
 		System.out.println("Queue length: " + queue.size());
 	}
 	
+	public static void postTarot(Properties prop, JumblrClient client) {
+		try {
+			MtgJson mj = new MtgJson(prop.getProperty("mtg.directory"), prop.getProperty("background.image"));
+			List<String> tags = new ArrayList<String>();
+			tags.add("tarot");
+			tags.add("magic the gathering");
+			tags.add("mtg");
+
+			PhotoPost post = client.newPost(prop.getProperty("tumblr.blogname"), PhotoPost.class);
+
+			mj.setFirstFilters(new CardFilter[]{new FilterSet("BFZ", "OGW", "EXP").setDescription("Battle for Zendikar block"), new FilterCardType("Enchantment", "Artifact", "Land").setDescription("enchantment, artifact, and land"), new FilterIsRealCard()});
+			mj.setSpread(Spread.CELTIC_CROSS);
+//			mj.setSpread(Spread.THREE_CARD);
+
+			mj.generatePost();
+
+			post.setCaption(mj.getCaption());
+			post.setPhoto(new Photo(new File(mj.getImageFilename())));
+			post.setTags(tags);
+			post.setState("queue");
+
+			System.out.println(mj.getCaption().replaceAll("\\n", "</p><p>"));
+			System.out.println(mj.getImageFilename());
+
+			post.save();
+
+		} catch (IllegalAccessException | InstantiationException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	public static void postTarot(Properties prop, JumblrClient client, Spread spread, int numberOfPosts) {
 		try {
 			MtgJson mj = new MtgJson(prop.getProperty("mtg.directory"), prop.getProperty("background.image"));
@@ -95,21 +131,25 @@ public class HelloTumblr {
 			tags.add("tarot");
 			tags.add("magic the gathering");
 			tags.add("mtg");
-			
+
+			Random r = new Random();
+			int sup1 = r.nextInt(Math.min(5, numberOfPosts)), sup2 = r.nextInt(Math.min(5, numberOfPosts));
+			int cel1 = r.nextInt(Math.min(5, numberOfPosts)), cel2 = r.nextInt(Math.min(5, numberOfPosts));
+			sup1 = -1; cel1 = -1; 
+
 			for (int i=0; i<numberOfPosts; i++) {
 				PhotoPost post = client.newPost(prop.getProperty("tumblr.blogname"), PhotoPost.class);
 				//TODO: Figure out what day this will be posted, change spread and filters accordingly
-				Random r = new Random();
-				int j = r.nextInt(numberOfPosts);
-				if (i==j) {
-					mj.setFirstFilters(new CardFilter[]{new FilterIsRealCard(), new FilterSupplemental(null, prop.getProperty("mtg.directory"))});
+				if (i==sup1 || i==sup2) {
+					mj.setFirstFilters(MtgJson.choosePresetFilters(prop));
+//					mj.setFirstFilters(new CardFilter[]{new FilterVanilla(), new FilterIsRealCard()});
+//					mj.setFirstFilters(new CardFilter[]{new FilterIsRealCard(), new FilterSupplemental(null, prop.getProperty("mtg.directory"))});
 				} else {
 					mj.setFirstFilters(null);
 				}
 				mj.setSpread(spread);
 
-				j = r.nextInt(numberOfPosts);
-				if (i==j) {
+				if (i==cel1 || i==cel2) {
 					mj.setSpread(Spread.CELTIC_CROSS);
 				} else {
 					mj.setSpread(Spread.THREE_CARD);
@@ -149,6 +189,8 @@ public class HelloTumblr {
 		Collections.sort(following, new Comparator<Blog>(){
 			@Override
 			public int compare(Blog blog1, Blog blog2) {
+				if (blog1.getUpdated()>blog2.getUpdated()) return 1;
+				if (blog1.getUpdated()<blog2.getUpdated()) return -1;
 				return blog1.getName().compareToIgnoreCase(blog2.getName());
 			}});
 
