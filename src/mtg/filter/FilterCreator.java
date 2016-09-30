@@ -1,10 +1,12 @@
-package mtg;
+package mtg.filter;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import java.util.regex.*;
 
-public class FilterVanilla extends CardFilter {
+public class FilterCreator extends CardFilter {
 
+	private static Pattern p = Pattern.compile("put a.*creature token.*onto the battlefield", Pattern.CASE_INSENSITIVE);
 	private static boolean firstPost = false;
 	
 	@Override
@@ -27,10 +29,11 @@ public class FilterVanilla extends CardFilter {
 
 		try {
 			String cardText = cardObject.getString("text");
-			if (cardText == null || cardText.length()==0) return true; // pretty sure this never happens, but hey
-			if (cardText.startsWith("(") && cardText.endsWith(")") && cardText.indexOf(")")==cardText.length()-1 ) return true; // the "Dryad Arbor Rule"
+			if (cardText == null || cardText.length()==0) return false; // pretty sure this never happens, but hey
+			Matcher m = p.matcher(cardText);
+			if (m.find()) return true; 
 		} catch (Exception e) {
-			return true;
+			return false;
 		}
 		
 		return false;
@@ -39,7 +42,7 @@ public class FilterVanilla extends CardFilter {
 	@Override
 	protected String generateDescription() {
 		// TODO Auto-generated method stub
-		return "vanilla creature";
+		return "laboring creature";
 	}
 
 }

@@ -29,7 +29,10 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import mtg.CardFilter.Direction;
+import mtg.filter.*;
+import mtg.filter.CardFilter.Direction;
+
+import mtg.parser.*;
 
 public class MtgJson {
 // http://mtgjson.com/
@@ -394,7 +397,7 @@ public class MtgJson {
 //		Integer[][] baseFilterVals = {{2, 0, 0, 0, 0, 0}, {2, 1, 0, 0, 0, 0}, {2, 1, 1, 0, 0, 0}};
 		Integer[][] baseFilterVals = {{2, 1, 0, 0, 0, 0}, {2, 1, 1, 0, 0, 0}, {2, 1, 1, 0, 0, 0}};
 
-		if (filterVals==null) {
+		while (filterVals==null) {
 			filterVals = baseFilterVals[r.nextInt(baseFilterVals.length)];
 			List<Integer> filterValList = new ArrayList<Integer>();
 			for (Integer i : filterVals) filterValList.add(i);
@@ -402,6 +405,8 @@ public class MtgJson {
 			filterVals = filterValList.toArray(filterVals);
 			
 			if (filterVals[2]==2) filterVals[3] = 0;
+			
+			if (filterVals[0]==1 && r.nextBoolean()) filterVals = null;
 		}
 
 		if (verbose) {
@@ -466,11 +471,14 @@ public class MtgJson {
 		if (filterVals[2]>1) {
 			toRet.add(new FilterColor(colors.get(0)).setDescription(colors.get(0).toLowerCase() + " and " + colors.get(1).toLowerCase()));
 			toRet.add(new FilterColor(colors.get(1)).setDescription(""));
+//			toRet.add(new FilterColor(colors.get(2), colors.get(3), colors.get(4)).invert().setDescription(""));
 		} else if (filterVals[2]==1) {
 			if (r.nextBoolean()) {
 				toRet.add(new FilterColor(colors.get(0)).setDescription(colors.get(0).toLowerCase()));
+				toRet.add(new FilterColor(colors.get(1), colors.get(2), colors.get(3), colors.get(4)).invert().setDescription(""));
 			} else {
 				toRet.add(new FilterColor(colors.get(0), colors.get(1)).setDescription(colors.get(0).toLowerCase() + " or " + colors.get(1).toLowerCase()));
+				toRet.add(new FilterColor(colors.get(2), colors.get(3), colors.get(4)).invert().setDescription(""));
 			}
 		}
 
@@ -570,22 +578,33 @@ public class MtgJson {
 	}
 	
 	public static CardFilter[] choosePresetFilters(Properties prop) {
-		return new CardFilter[]{new FilterIsRealCard(), new FilterSupplemental(null, prop.getProperty("mtg.directory"))};
+//		return new CardFilter[]{new FilterIsRealCard(), new FilterSupplemental(null, prop.getProperty("mtg.directory"))};
 //		return new CardFilter[]{new FilterVanilla(), new FilterIsRealCard()};
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterSet("BFZ", "OGW", "EXP"), new FilterCardType("Enchantment", "Artifact", "Land")};
 //		return new CardFilter[]{new FilterSet("ISD", "DKA", "AVR").setDescription("Innistrad block"), new FilterLayout("double-faced").setDescription("double-faced"), new FilterIsRealCard()}; 
 //		return new CardFilter[]{new FilterSnowy(), new FilterIsRealCard()};
 //		return new CardFilter[]{new FilterCardType("Planeswalker").setDescription("Planeswalker"), new FilterIsRealCard()};
-//		return new CardFilter[]{new FilterCardType("Sliver"), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterCardType("Sliver").setDescription("Sliver"), new FilterIsRealCard()};
 //		return new CardFilter[]{new FilterRomantic(), new FilterIsRealCard()};
-//		return new CardFilter[]{new FilterIsRealCard(), new FilterArtist("Richard Kane Ferguson")}; // or Christopher Rush, Wayne Reynolds, Drew Tucker, Kaja Foglio
+//		return new CardFilter[]{new FilterCardType("Land").setDescription("Land"), new FilterIsRealCard(), new FilterArtist("John Avon")}; 
+//		return new CardFilter[]{new FilterIsRealCard(), new FilterArtist("Richard Kane Ferguson")}; // or Christopher Rush, Wayne Reynolds, Drew Tucker, Kaja Foglio, Richard Kane Ferguson
 //		return new CardFilter[]{new FilterSet("UGL", "UNH").setDescription("foolish cards")};
 //		return new CardFilter[]{new FilterColorCount(Direction.GREATER_THAN_OR_EQUAL_TO, 2).setDescription("multicolored"), new FilterSet("KTK", "FRF").setDescription("Khans of Tarkir / Fate Reforged"), new FilterIsRealCard()};
 //		return new CardFilter[]{new FilterSet("CHR").setDescription("Chronicles"), new FilterIsRealCard()};
 //		return new CardFilter[]{new FilterCardTitle("time", "temporal", "hour", "day", "year").setDescription("time-related"), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterCardText("Madness {", "Delirium —").setDescription("madness or delirium"), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterLegality("Modern").invert().setDescription("non-Modern legal"), new FilterLegality("Vintage").setDescription(""), new FilterSet("EMA").setDescription("Eternal Masters"), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterSetType("core", "expansion", "starter").setDescription(""), new FilterLegality("Legacy").invert().setDescription("Legacy illegal"), new FilterIsRealCard().setVintageLegalityRequired(false)};
+//		String watermark = "Azorius";
+//		return new CardFilter[]{new FilterWatermark(watermark).setDescription(watermark), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterIsRealCard(), new FilterCardText("doesn't untap").setDescription("that don't untap")};
+//		return new CardFilter[]{new FilterColorCount(Direction.EQUAL_TO, 0), new FilterCardType("Eldrazi"), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterCreator(), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterSet("EXP", "MPS").setDescription("Masterpieces")};
+		return new CardFilter[]{new FilterIsRealCard(), new FilterUniqueTokens(null, prop.getProperty("mtg.directory"))};
 	}
 	
-	private static CardFilter[] chooseSetFilters() {
+	private static CardFilter[] chooseSetFilters(Properties prop) {
 //		return new CardFilter[]{new FilterIsRealCard()};
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterSet("BFZ", "OGW", "EXP"), new FilterCardType("Instant", "Sorcery")};
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterSet("BFZ", "OGW", "EXP"), new FilterCardType("Creature", "Planeswalker")};
@@ -599,10 +618,16 @@ public class MtgJson {
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterRarity("Mythic Rare").setDescription("mythic rare"), new FilterSetType("reprint")}; //new FilterSetType("core", "expansion")};
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterSetType("box")}; 
 //		return new CardFilter[]{new FilterRomantic(), new FilterIsRealCard()};
-		return choosePresetFilters(null);
+		return choosePresetFilters(prop);
 	}
 	
 	////////////////////////////////
+
+	private static Properties getPropertiesAsProperties(String propertyFileName) throws IOException {
+		Properties prop = new Properties();
+		prop.load(new FileReader(propertyFileName));
+		return prop;
+	}
 
 	private static String[] getProperties(String propertyFileName) throws IOException {
 		Properties prop = new Properties();
@@ -639,7 +664,8 @@ public class MtgJson {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		// The main main method, for testing the filters. 
+		// The main main method, for testing the filters.
+		Properties prop = getPropertiesAsProperties(args[0]);
 		String[] props = getProperties(args[0]);
 		MtgJson mj = new MtgJson(props[0], props[1]);
 
@@ -647,11 +673,31 @@ public class MtgJson {
 		JsonObject jo = jr.readObject();
 
 		mj.setSpread(Spread.THREE_CARD);
-		List<Card> cards = mj.getCards(jo, chooseSetFilters(), false, false);
+		List<Card> cards = mj.getCards(jo, chooseSetFilters(prop), false, false);
 		int i=0; 
+		Collections.sort(cards, new Comparator<Card>(){
+			@Override
+			public int compare(Card arg0, Card arg1) {
+				return arg0.getName().compareTo(arg1.getName());
+			}});
 		for (Card card : cards) {
 			i++;
 			System.out.println(i + ": " + card);
+		}
+		if (i==0) System.out.println("No results.");
+	}
+
+	public static void mainListSets(String[] args) throws IOException {
+		// List all the sets. 
+		String[] props = getProperties(args[0]);
+		MtgJson mj = new MtgJson(props[0], props[1]);
+
+		JsonReader jr = Json.createReader(new InputStreamReader(new FileInputStream(props[0] + "AllSets-x.json"), "UTF8"));
+		JsonObject jo = jr.readObject();
+		
+		for (String setId : jo.keySet()) {
+			JsonObject setObject = jo.getJsonObject(setId);
+			System.out.println(setId + ", " + setObject.getString("name") + ", " + setObject.getJsonArray("cards").size() + ", " + setObject.getString("type"));
 		}
 	}
 
@@ -682,59 +728,45 @@ public class MtgJson {
 		}
 	}
 	
-	public static void main1(String[] args) throws IOException {
+	public static void mainCountStuff(String[] args) throws IOException {
+		// For a given filter, makes a hashmap based on a ceratain key, so, like, to count the number of X colored cards in Alara block, or the number of cards with X watermark, or whatever
+/*
+		CardFilter[] cardFilter = new CardFilter[]{new FilterIsRealCard(), new FilterLegality("Shards of Alara Block")};
+		CardParser parser = new ParserColorCount();
+*/
+
+		CardFilter[] cardFilter = new CardFilter[]{new FilterIsRealCard()};
+		CardParser parser = new ParserWatermark();
+		
+		boolean showSets = false;
+		boolean cardUnique = true;
+
+		countArbitraryValue(args, cardFilter, parser, showSets, cardUnique);
+	}
+
+	public static void countArbitraryValue(String[] args, CardFilter[] cardFilter, CardParser parser, boolean showSets, boolean cardUnique) throws IOException {
 		String[] props = getProperties(args[0]);
 
 		String filename = props[0] + "AllSets-x.json";
 		JsonReader jr = Json.createReader(new InputStreamReader(new FileInputStream(filename), "UTF8"));
 		JsonObject jo = jr.readObject();
 
-		boolean cardUnique = true;
 		Set<String> cardsSeen = new HashSet<String>();
 		Map<String, CountedString> countMap = new HashMap<String, CountedString>();
 		
-		CardFilter[] cardFilter = new CardFilter[]{new FilterIsRealCard(), new FilterLegality("Shards of Alara Block")};
-
 		for (String setId : jo.keySet()) {
 			JsonObject setObject = jo.getJsonObject(setId);
 
 			JsonArray cardArray = setObject.getJsonArray("cards");
-			System.out.println(setId + ", " + cardArray.size());
+			if (showSets) System.out.println(setId + ", " + cardArray.size());
 			for (int j=0; j<cardArray.size(); j++) {
 				JsonObject cardObject = (JsonObject)cardArray.get(j);
 
 				if (!isOk(cardObject, setId, setObject, cardFilter)) continue;
 
 				String cardName = cardObject.getString("name");
-				String[] cardKeys = null;
-				try {
-//					cardKeys = new String[]{Integer.toString(cardObject.getInt("cmc"))};
-//					cardKeys = new String[]{cardObject.getString("rarity")};
-/*
-					JsonArray ja = cardObject.getJsonArray("colors");
-					cardKeys = new String[ja.size()];
-					for (int i=0; i<ja.size(); i++) {
-						cardKeys[i] = ja.getString(i);
-					}
-*/
+				String[] cardKeys = parser.parseCard(cardObject);
 
-					JsonArray ja = cardObject.getJsonArray("colors");
-					cardKeys = new String[]{Integer.toString(ja.size())};
-
-/*
-					List<String> cardKeysList = new ArrayList<String>();
-					JsonObject joo = cardObject.getJsonObject("legalities");
-					for (String key : joo.keySet()) {
-						String s = key + " " + joo.getString(key);
-						cardKeysList.add(s);
-					}
-					cardKeys = cardKeysList.toArray(new String[]{});
-*/
-				} catch (Exception e) {
-//					cardKeys = null;
-//					if (cardsSeen.isEmpty()) e.printStackTrace();
-					cardKeys = new String[]{"0"};
-				}
 				if (cardUnique && cardsSeen.contains(cardName)) {
 					// nope
 				} else {
@@ -764,7 +796,8 @@ public class MtgJson {
 		
 	}
 
-	public static void main2(String[] args) throws IOException {
+	public static void mainMonteCarlo(String[] args) throws IOException {
+		// Do 100 tests for each primary/secondary random filter combination and count how many end up with a right number of cards.
 		String[] props = getProperties(args[0]);
 		MtgJson mj = new MtgJson(props[0], props[1]);
 
@@ -786,8 +819,12 @@ public class MtgJson {
 					CardFilter[] filters = mj.chooseRandomFilters(filterVals, a==0);
 					List<Card> l = mj.getCards(jo, filters, false);
 					if (l.size()>52) {
-						passed++;
-						System.out.print("+");
+						if (l.size()<201) {
+							passed++;
+							System.out.print("+");
+						} else {
+							System.out.print("*");
+						}
 					} else {
 						System.out.print("-");
 					}
@@ -801,7 +838,8 @@ public class MtgJson {
 		}
 	}
 
-	public static void main3(String[] args) throws IOException {
+	public static void mainMonteCarloStats(String[] args) throws IOException {
+		// Do 100 tests for each primary/secondary random filter combination and count how many end up with a right number of cards, plus statistics
 		String[] props = getProperties(args[0]);
 		MtgJson mj = new MtgJson(props[0], props[1]);
 
@@ -826,8 +864,12 @@ public class MtgJson {
 					CardFilter[] filters = mj.chooseRandomFilters(filterVals, a==0);
 					List<Card> l = mj.getCards(jo, filters, false);
 					if (l.size()>52) {
-						passed++;
-						System.out.print("+");
+						if (l.size()<201) {
+							passed++;
+							System.out.print("+");
+						} else {
+							System.out.print("*");
+						}
 					} else {
 						System.out.print("-");
 					}
@@ -868,7 +910,7 @@ public class MtgJson {
 	}
 	
 
-	public static void mainCountArtists(String[] args) throws IOException {
+	public static void mainArtist(String[] args) throws IOException {
 		// Counts artists
 		String[] props = getProperties(args[0]);
 

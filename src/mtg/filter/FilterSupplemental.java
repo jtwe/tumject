@@ -1,4 +1,4 @@
-package mtg;
+package mtg.filter;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -36,7 +36,12 @@ public class FilterSupplemental extends CardFilter {
 				for (String key : jo.keySet()) {
 					JsonObject setObject = jo.getJsonObject(key);
 
-					String setType = setObject.getString("type");
+					String setType = "";
+					try {
+						setType = setObject.getString("type");
+					} catch (NullPointerException e1) {
+						System.out.println("In FilterSupplemental, NullPointer, key = " + key + ", type = null, set = " + setObject.getString("name"));
+					}
 
 					boolean isRegularSet = false;
 					if (setType.equals("core") || setType.equals("starter") || setType.equals("expansion")) isRegularSet = true;

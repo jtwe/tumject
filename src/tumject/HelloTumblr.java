@@ -3,17 +3,13 @@ package tumject;
 import com.tumblr.jumblr.JumblrClient;
 import com.tumblr.jumblr.types.*;
 
-import mtg.CardFilter;
-import mtg.FilterCardType;
-import mtg.FilterIsRealCard;
-import mtg.FilterSet;
-import mtg.FilterSupplemental;
-import mtg.FilterVanilla;
+import mtg.filter.*;
 import mtg.MtgJson;
 import mtg.MtgJson.Spread;
 
 import java.util.*;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -21,6 +17,39 @@ import java.lang.reflect.*;
 import java.text.SimpleDateFormat;
 
 public class HelloTumblr {
+	public static void main01(String[] args) throws IOException {
+		String propertyFileName = args[0];
+		Properties prop = new Properties();
+		prop.load(new FileReader(propertyFileName));
+		
+		// Authenticate via OAuth
+		JumblrClient client = new JumblrClient(
+		  prop.getProperty("tumblr.key.1"),
+		  prop.getProperty("tumblr.key.2")
+		);
+
+		client.setToken(
+		  prop.getProperty("tumblr.key.3"),
+		  prop.getProperty("tumblr.key.4")
+		); 
+
+		Blog blog = client.blogInfo("elspethsunschampion");
+		dumpObject(blog);
+		Long lastPostTimestamp = null;
+		List<Post> posts = blog.posts();
+		int i=0;
+		Map<String, Object> options = new HashMap<String, Object>();
+		
+		for (int j=0; j<2; j++) {
+			for (Post post : posts) {
+				System.out.println( (i++) + "\t" + post.getId() + "\t" + post.getDateGMT() + "\t" + post.getTimestamp() + "\t" + (lastPostTimestamp==null?"":lastPostTimestamp-post.getTimestamp()));
+				lastPostTimestamp = post.getTimestamp();
+			}
+			options.put("offset", i);
+			posts = blog.posts(options);
+		}
+	}
+	
 	public static void main(String[] args) throws IOException {
 		String propertyFileName = args[0];
 		Properties prop = new Properties();
@@ -223,8 +252,8 @@ public class HelloTumblr {
 					lastPostStr = lastPost + " mon*";
 				}
 
-				pw.println(i + ": " + blog.getName() + " (" + blog.getTitle() + "; " + lastPostStr + ")");
-				if (verbose) System.out.println(blog.getName() + " (" + blog.getTitle() + "; " + lastPostStr + ")");
+				pw.println(i + "\t" + blog.getName() + "\t" + blog.getTitle() + "\t" + lastPostStr);
+				if (verbose) System.out.println(blog.getName() + "\t" + blog.getTitle() + "\t" + lastPostStr);
 				i++;
 			}
 			

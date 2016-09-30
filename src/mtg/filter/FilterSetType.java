@@ -1,4 +1,4 @@
-package mtg;
+package mtg.filter;
 
 import java.util.ArrayList;
 import java.util.List;
