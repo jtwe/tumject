@@ -162,7 +162,7 @@ public class FilterUniqueTokens extends CardFilter {
 
 	@Override
 	protected String generateDescription() {
-		return "which create unique tokens";
+		return "which create unique counters";
 	}
 
 }

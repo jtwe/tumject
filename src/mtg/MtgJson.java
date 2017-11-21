@@ -181,7 +181,7 @@ public class MtgJson {
 		
 		int maxSize = 150;
 
-		while (cards.size()<52 || cards.size()>maxSize) {
+		while (cards.size()<49 || cards.size()>maxSize) {
 			if (firstFilters!=null) {
 				filters = firstFilters;
 				if (lockFilters && maxSize>1000) firstFilters = null;
@@ -507,6 +507,9 @@ public class MtgJson {
 					{"Theros block", "THS", "BNG", "JOU"},
 					{"Tarkir block", "KTK", "FRF", "DTK"},
 					{"Battle for Zendikar block", "BFZ", "OGW", "EXP"},
+					// shadows over innistrad
+					// kaladesh
+					// amonkhet
 			};
 			String[] block = blockSets[r.nextInt(blockSets.length)];
 			List<String> sets = new ArrayList<String>();
@@ -578,30 +581,87 @@ public class MtgJson {
 	}
 	
 	public static CardFilter[] choosePresetFilters(Properties prop) {
-//		return new CardFilter[]{new FilterIsRealCard(), new FilterSupplemental(null, prop.getProperty("mtg.directory"))};
+		boolean itsTime = false;
+
+		if (itsTime) {
+			return new CardFilter[]{new FilterCardTitle("time", "temporal", "hour", "day", "year").setDescription("time-related"), new FilterIsRealCard()};
+		}
+
+		Random r = new Random();
+		CardFilter[] toRet = null;
+
+		while (toRet == null) {
+			if (r.nextBoolean()) {
+				int w = r.nextInt(5);
+				switch(w) {
+				case 0:
+					toRet = new CardFilter[]{new FilterCardType("Planeswalker").setDescription("Planeswalker"), new FilterIsRealCard()};
+					break;
+				case 1:
+					toRet = new CardFilter[]{new FilterCardType("Sliver").setDescription("Sliver"), new FilterIsRealCard()};
+					break;
+				case 2:
+					toRet = new CardFilter[]{new FilterIsRealCard(), new FilterUniqueTokens(null, prop.getProperty("mtg.directory"))};
+					break;
+				case 3: 
+					toRet = new CardFilter[]{new FilterIsRealCard(), new FilterLongNames(null, prop.getProperty("mtg.directory"), 75, false)};
+					break;
+				case 4:
+					toRet = new CardFilter[]{new FilterCardType("Legendary").setDescription("Legendary"), new FilterCardType("Human").setDescription("Human"), new FilterLegality("Commander").setDescription("commander"), new FilterIsRealCard().setVintageLegalityRequired(false)};
+					break;
+				}
+			}
+
+			if (r.nextBoolean()) {
+				int w = r.nextInt(6);
+				switch(w) {
+				case 0:
+					String[] artists = {"Christopher Rush", "Wayne Reynolds", "Drew Tucker", "Kaja Foglio", "Richard Kane Ferguson"};
+					String artist = artists[r.nextInt(artists.length)];
+					toRet = new CardFilter[]{new FilterIsRealCard(), new FilterArtist("Christopher Rush")}; // or Christopher Rush, Wayne Reynolds, Drew Tucker, Kaja Foglio, Richard Kane Ferguson
+					break;
+				case 1:
+					toRet = new CardFilter[]{new FilterCardType("Land").setDescription("Land"), new FilterIsRealCard(), new FilterArtist("John Avon")};
+					break;
+				case 2:
+					toRet = new CardFilter[]{new FilterSet("EXP", "MPS", "MPS_AKH").setDescription("Masterpieces")};
+					break;
+				case 3:
+					String[] watermarks = {"Azorius", "Dimir", "Rakdos", "Gruul", "Selesnya", "Boros", "Simic", "Orzhov", "Izzet", "Golgari"};
+					String watermark = watermarks[r.nextInt(watermarks.length)];
+					toRet = new CardFilter[]{new FilterWatermark(watermark).setDescription(watermark), new FilterIsRealCard()};
+					break;
+				case 4:
+					toRet = new CardFilter[]{new FilterCreator(), new FilterIsRealCard()};
+					break;
+				case 5:
+					toRet = new CardFilter[]{new FilterColorCount(Direction.EQUAL_TO, 0).setDescription("colorless"), new FilterCardType("Eldrazi").setDescription("Eldrazi"), new FilterIsRealCard()};
+					break;
+				}
+			}
+		}
+		
+		return toRet;
+//		return new CardFilter[]{new FilterSetType("core", "expansion", "starter").setDescription(""), new FilterLegality("Legacy").invert().setDescription("Legacy illegal"), new FilterIsRealCard().setVintageLegalityRequired(false)};
+//		return new CardFilter[]{new FilterLegality("Modern").invert().setDescription("non-Modern legal"), new FilterLegality("Vintage").setDescription(""), new FilterSet("EMA").setDescription("Eternal Masters"), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterIsRealCard().setVintageLegalityRequired(false), new FilterReservedList(), new FilterCmc(Direction.LESS_THAN_OR_EQUAL_TO, 1)};
+
+//		return new CardFilter[]{new FilterSnowy(), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterRomantic(), new FilterIsRealCard()};
 //		return new CardFilter[]{new FilterVanilla(), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterSet("UGL", "UNH").setDescription("foolish cards")};
+
+//		return new CardFilter[]{new FilterIsRealCard(), new FilterSupplemental(null, prop.getProperty("mtg.directory"))};
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterSet("BFZ", "OGW", "EXP"), new FilterCardType("Enchantment", "Artifact", "Land")};
 //		return new CardFilter[]{new FilterSet("ISD", "DKA", "AVR").setDescription("Innistrad block"), new FilterLayout("double-faced").setDescription("double-faced"), new FilterIsRealCard()}; 
-//		return new CardFilter[]{new FilterSnowy(), new FilterIsRealCard()};
-//		return new CardFilter[]{new FilterCardType("Planeswalker").setDescription("Planeswalker"), new FilterIsRealCard()};
-//		return new CardFilter[]{new FilterCardType("Sliver").setDescription("Sliver"), new FilterIsRealCard()};
-//		return new CardFilter[]{new FilterRomantic(), new FilterIsRealCard()};
-//		return new CardFilter[]{new FilterCardType("Land").setDescription("Land"), new FilterIsRealCard(), new FilterArtist("John Avon")}; 
-//		return new CardFilter[]{new FilterIsRealCard(), new FilterArtist("Richard Kane Ferguson")}; // or Christopher Rush, Wayne Reynolds, Drew Tucker, Kaja Foglio, Richard Kane Ferguson
-//		return new CardFilter[]{new FilterSet("UGL", "UNH").setDescription("foolish cards")};
 //		return new CardFilter[]{new FilterColorCount(Direction.GREATER_THAN_OR_EQUAL_TO, 2).setDescription("multicolored"), new FilterSet("KTK", "FRF").setDescription("Khans of Tarkir / Fate Reforged"), new FilterIsRealCard()};
 //		return new CardFilter[]{new FilterSet("CHR").setDescription("Chronicles"), new FilterIsRealCard()};
-//		return new CardFilter[]{new FilterCardTitle("time", "temporal", "hour", "day", "year").setDescription("time-related"), new FilterIsRealCard()};
 //		return new CardFilter[]{new FilterCardText("Madness {", "Delirium —").setDescription("madness or delirium"), new FilterIsRealCard()};
-//		return new CardFilter[]{new FilterLegality("Modern").invert().setDescription("non-Modern legal"), new FilterLegality("Vintage").setDescription(""), new FilterSet("EMA").setDescription("Eternal Masters"), new FilterIsRealCard()};
-//		return new CardFilter[]{new FilterSetType("core", "expansion", "starter").setDescription(""), new FilterLegality("Legacy").invert().setDescription("Legacy illegal"), new FilterIsRealCard().setVintageLegalityRequired(false)};
-//		String watermark = "Azorius";
-//		return new CardFilter[]{new FilterWatermark(watermark).setDescription(watermark), new FilterIsRealCard()};
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterCardText("doesn't untap").setDescription("that don't untap")};
-//		return new CardFilter[]{new FilterColorCount(Direction.EQUAL_TO, 0), new FilterCardType("Eldrazi"), new FilterIsRealCard()};
-//		return new CardFilter[]{new FilterCreator(), new FilterIsRealCard()};
-//		return new CardFilter[]{new FilterSet("EXP", "MPS").setDescription("Masterpieces")};
-		return new CardFilter[]{new FilterIsRealCard(), new FilterUniqueTokens(null, prop.getProperty("mtg.directory"))};
+//		return new CardFilter[]{new FilterIsRealCard().setVintageLegalityRequired(false)};
+//		return new CardFilter[]{new FilterColorIdentity("U", "B").invert().setDescription("Magical Christmasland colored"), new FilterColorIdentity("W").setDescription(""), new FilterColorIdentity("G").setDescription(""), new FilterColorIdentity("R").setDescription(""), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterSet("MM3").setDescription("Modern Masters 2017"), new FilterIsRealCard()};
+//		return new CardFilter[]{new FilterNonBlackZombie(), new FilterIsRealCard().setDescription("")};
 	}
 	
 	private static CardFilter[] chooseSetFilters(Properties prop) {

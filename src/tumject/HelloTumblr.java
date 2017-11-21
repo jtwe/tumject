@@ -1,6 +1,7 @@
 package tumject;
 
 import com.tumblr.jumblr.JumblrClient;
+import com.tumblr.jumblr.exceptions.JumblrException;
 import com.tumblr.jumblr.types.*;
 
 import mtg.filter.*;
@@ -8,8 +9,8 @@ import mtg.MtgJson;
 import mtg.MtgJson.Spread;
 
 import java.util.*;
+
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -57,16 +58,20 @@ public class HelloTumblr {
 		
 		// Authenticate via OAuth
 		JumblrClient client = new JumblrClient(
-		  prop.getProperty("tumblr.key.1"),
-		  prop.getProperty("tumblr.key.2")
+		  prop.getProperty("tumblr.key.1"), // API Key
+		  prop.getProperty("tumblr.key.2")  // API Secret
 		);
 
 		client.setToken(
-		  prop.getProperty("tumblr.key.3"),
-		  prop.getProperty("tumblr.key.4")
+		  prop.getProperty("tumblr.key.3"), // Token Key
+		  prop.getProperty("tumblr.key.4")  // Token Secret
 		); 
 
-		dumpFollowing(prop, client, false);
+		try {
+			dumpFollowing(prop, client, false);
+		} catch (JumblrException e) {
+			System.out.println(e);
+		}
 
 		/*
 		User user = client.user();
