@@ -15,6 +15,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 
 public class HelloTumblr {
@@ -55,35 +57,39 @@ public class HelloTumblr {
 		String propertyFileName = args[0];
 		Properties prop = new Properties();
 		prop.load(new FileReader(propertyFileName));
-		
-		// Authenticate via OAuth
-		JumblrClient client = new JumblrClient(
-		  prop.getProperty("tumblr.key.1"), // API Key
-		  prop.getProperty("tumblr.key.2")  // API Secret
-		);
 
-		client.setToken(
-		  prop.getProperty("tumblr.key.3"), // Token Key
-		  prop.getProperty("tumblr.key.4")  // Token Secret
-		); 
+		if (jsonNeedsUpdate(prop)) {
+			System.out.println("Update the JSON!");
+		} else {
+			// Authenticate via OAuth
+			JumblrClient client = new JumblrClient(
+					prop.getProperty("tumblr.key.1"), // API Key
+					prop.getProperty("tumblr.key.2")  // API Secret
+					);
 
-		try {
-			dumpFollowing(prop, client, false);
-		} catch (JumblrException e) {
-			System.out.println(e);
-		}
+			client.setToken(
+					prop.getProperty("tumblr.key.3"), // Token Key
+					prop.getProperty("tumblr.key.4")  // Token Secret
+					); 
 
-		/*
+			try {
+				dumpFollowing(prop, client, false);
+			} catch (JumblrException e) {
+				System.out.println(e);
+			}
+
+			/*
 		User user = client.user();
 		System.out.println(user.getName());
-		*/
+			 */
 
-//		Blog blog = client.blogInfo(prop.getProperty("tumblr.blogname")); //.tumblr.com");
-//		dumpPosts(blog);
-//		dumpQueue(client.blogInfo(prop.getProperty("tumblr.blogname")));
+			//		Blog blog = client.blogInfo(prop.getProperty("tumblr.blogname")); //.tumblr.com");
+			//		dumpPosts(blog);
+			//		dumpQueue(client.blogInfo(prop.getProperty("tumblr.blogname")));
 
-//		postTarot(prop, client);
-		postTarot(prop, client, Spread.THREE_CARD, 5);
+			//		postTarot(prop, client);
+			postTarot(prop, client, Spread.THREE_CARD, 5);
+		}
 	}
 
 	// Gotta replace — with &mdash; .  Probably others too.
@@ -317,4 +323,26 @@ public class HelloTumblr {
 		}
 	}
 
+	public static boolean jsonNeedsUpdate(Properties props) throws IOException {
+		String urlStr = "http://mtgjson.com/json/AllSets-x.json.zip";
+		
+		URL u = new URL(urlStr);
+		HttpURLConnection conn = (HttpURLConnection)u.openConnection();
+		conn.setRequestMethod("HEAD");
+		conn.connect();
+
+//		System.out.println("Response code = " + conn.getResponseCode());
+//		System.out.println();
+//		
+		Date mtgJson = new Date(conn.getLastModified());
+		System.out.println("Date mtgjson last modified: " + mtgJson);
+
+		File f = new File(props.getProperty("mtg.directory") + "AllSets-x.json");
+		Date fileLastMod = new Date(f.lastModified());
+		System.out.println("Last Modified: " + fileLastMod);
+		
+		System.out.println("mtgJson.compareTo(fileLastMod): " + mtgJson.compareTo(fileLastMod) + " (1 = file on the server is newer)");  
+
+		return (mtgJson.compareTo(fileLastMod))>=0;
+	}
 }

@@ -581,10 +581,14 @@ public class MtgJson {
 	}
 	
 	public static CardFilter[] choosePresetFilters(Properties prop) {
-		boolean itsTime = false;
+		boolean itsTime = false, itsXmas = false;
 
 		if (itsTime) {
 			return new CardFilter[]{new FilterCardTitle("time", "temporal", "hour", "day", "year").setDescription("time-related"), new FilterIsRealCard()};
+		}
+		
+		if (itsXmas) {
+			return new CardFilter[]{new FilterColorIdentity("U", "B").invert().setDescription("Magical Christmasland colored"), new FilterColorIdentity("W").setDescription(""), new FilterColorIdentity("G").setDescription(""), new FilterColorIdentity("R").setDescription(""), new FilterIsRealCard()};
 		}
 
 		Random r = new Random();
@@ -613,7 +617,7 @@ public class MtgJson {
 			}
 
 			if (r.nextBoolean()) {
-				int w = r.nextInt(6);
+				int w = r.nextInt(5);
 				switch(w) {
 				case 0:
 					String[] artists = {"Christopher Rush", "Wayne Reynolds", "Drew Tucker", "Kaja Foglio", "Richard Kane Ferguson"};
@@ -632,9 +636,6 @@ public class MtgJson {
 					toRet = new CardFilter[]{new FilterWatermark(watermark).setDescription(watermark), new FilterIsRealCard()};
 					break;
 				case 4:
-					toRet = new CardFilter[]{new FilterCreator(), new FilterIsRealCard()};
-					break;
-				case 5:
 					toRet = new CardFilter[]{new FilterColorCount(Direction.EQUAL_TO, 0).setDescription("colorless"), new FilterCardType("Eldrazi").setDescription("Eldrazi"), new FilterIsRealCard()};
 					break;
 				}
@@ -642,6 +643,7 @@ public class MtgJson {
 		}
 		
 		return toRet;
+//		return new CardFilter[]{new FilterCreator(), new FilterIsRealCard()};
 //		return new CardFilter[]{new FilterSetType("core", "expansion", "starter").setDescription(""), new FilterLegality("Legacy").invert().setDescription("Legacy illegal"), new FilterIsRealCard().setVintageLegalityRequired(false)};
 //		return new CardFilter[]{new FilterLegality("Modern").invert().setDescription("non-Modern legal"), new FilterLegality("Vintage").setDescription(""), new FilterSet("EMA").setDescription("Eternal Masters"), new FilterIsRealCard()};
 //		return new CardFilter[]{new FilterIsRealCard().setVintageLegalityRequired(false), new FilterReservedList(), new FilterCmc(Direction.LESS_THAN_OR_EQUAL_TO, 1)};
@@ -659,7 +661,6 @@ public class MtgJson {
 //		return new CardFilter[]{new FilterCardText("Madness {", "Delirium —").setDescription("madness or delirium"), new FilterIsRealCard()};
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterCardText("doesn't untap").setDescription("that don't untap")};
 //		return new CardFilter[]{new FilterIsRealCard().setVintageLegalityRequired(false)};
-//		return new CardFilter[]{new FilterColorIdentity("U", "B").invert().setDescription("Magical Christmasland colored"), new FilterColorIdentity("W").setDescription(""), new FilterColorIdentity("G").setDescription(""), new FilterColorIdentity("R").setDescription(""), new FilterIsRealCard()};
 //		return new CardFilter[]{new FilterSet("MM3").setDescription("Modern Masters 2017"), new FilterIsRealCard()};
 //		return new CardFilter[]{new FilterNonBlackZombie(), new FilterIsRealCard().setDescription("")};
 	}
