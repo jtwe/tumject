@@ -36,8 +36,8 @@ public class FilterSet extends CardFilter {
 	}
 	
 	@Override
-	public boolean isOk(JsonObject cardObject, JsonObject setObject) {
-		String setId = setObject.getString("code");
+	public boolean isOk(JsonObject cardObject, JsonObject setObject, String setId) {
+//		String setId = setObject.getString("code");
 		if (sets.contains(setId)) return toRet;
 		return !toRet;
 	}

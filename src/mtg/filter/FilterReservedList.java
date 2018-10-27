@@ -7,7 +7,7 @@ public class FilterReservedList extends CardFilter {
 	@Override
 	public boolean isOk(JsonObject cardObject) {
 		try {
-			return cardObject.getBoolean("reserved");
+			return cardObject.getBoolean("isReserved");
 		} catch (RuntimeException e) {
 			return false;
 		}
@@ -15,7 +15,6 @@ public class FilterReservedList extends CardFilter {
 
 	@Override
 	protected String generateDescription() {
-		// TODO Auto-generated method stub
 		return "on the Reserved List";
 	}
 

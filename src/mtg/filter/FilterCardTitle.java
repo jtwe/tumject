@@ -7,7 +7,7 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 public class FilterCardTitle extends CardFilter {
-	private boolean inverted = true;
+	private boolean inverted = false;
 	private boolean andFlavor = false;
 	private List<String> titleStrings;
 	
@@ -33,20 +33,20 @@ public class FilterCardTitle extends CardFilter {
 	@Override
 	public boolean isOk(JsonObject cardObject) {
 		for (String s : titleStrings) {
-			if (cardObject.getString("name", "").toLowerCase().contains(s.toLowerCase())) return inverted;
+			if (cardObject.getString("name", "").toLowerCase().contains(s.toLowerCase())) return !inverted;
 
 			if (andFlavor) {
 				String flavor = "";
 				try {
-					flavor = cardObject.getString("flavor").toLowerCase();
+					flavor = cardObject.getString("flavorText").toLowerCase();
 				} catch (Exception e) {
 				}
 
-				if (flavor.contains(s.toLowerCase())) return inverted;
+				if (flavor.contains(s.toLowerCase())) return !inverted;
 			}
 		}
 
-		return !inverted;
+		return inverted;
 	}
 
 	@Override

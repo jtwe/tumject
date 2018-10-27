@@ -53,14 +53,16 @@ public class FilterLongNames extends CardFilter {
 						String cardName = cardObject.getString("name");
 
 						try {
+							String vintageLegality = cardObject.getJsonObject("legalities").getString("vintage");
+							/*
 							JsonArray legalities = cardObject.getJsonArray("legalities");
-							String vintageLegality = "";
 							for (int i=0; i<legalities.size(); i++) {
 								JsonObject legality = legalities.getJsonObject(i);
 								if (legality.getString("format").equals("Vintage")) {
 									vintageLegality = legality.getString("legality");
 								}
 							}
+							*/
 
 							if (!"Legal".equals(vintageLegality) && !"Restricted".equals(vintageLegality)) continue;
 						} catch (NullPointerException e) {

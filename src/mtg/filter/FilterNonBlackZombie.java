@@ -11,7 +11,7 @@ public class FilterNonBlackZombie extends CardFilter {
 		JsonArray cardColors = cardObject.getJsonArray("colors");
 		if (cardColors!=null) {
 			for (int i=0; i<cardColors.size(); i++) {
-				if (cardColors.getString(i).equals("Black")) return !toRet;
+				if (cardColors.getString(i).equals("B")) return !toRet;
 			}
 		}
 
@@ -22,7 +22,7 @@ public class FilterNonBlackZombie extends CardFilter {
 			}
 		}
 
-		if (cardObject.getString("text", "").toLowerCase().contains("embalm")) return toRet;
+		if (cardObject.getString("text", "").toLowerCase().contains("embalm") || cardObject.getString("text", "").toLowerCase().contains("eternalize")) return toRet;
 		
 		return !toRet;
 	}

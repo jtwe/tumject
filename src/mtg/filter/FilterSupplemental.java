@@ -20,7 +20,7 @@ public class FilterSupplemental extends CardFilter {
 		if (supplementalCards==null) {
 			if (jo==null) {
 				try {
-					JsonReader jr = Json.createReader(new InputStreamReader(new FileInputStream(directory + "AllSets-x.json"), "UTF8"));
+					JsonReader jr = Json.createReader(new InputStreamReader(new FileInputStream(directory + "v4/AllSets.json"), "UTF8"));
 					jo = jr.readObject();
 				} catch (UnsupportedEncodingException | FileNotFoundException e) {
 					jo = null;
@@ -52,6 +52,8 @@ public class FilterSupplemental extends CardFilter {
 						String cardName = cardObject.getString("name");
 
 						try {
+							String vintageLegality = cardObject.getJsonObject("legalities").getString("vintage");
+							/*
 							JsonArray legalities = cardObject.getJsonArray("legalities");
 							String vintageLegality = "";
 							for (int i=0; i<legalities.size(); i++) {
@@ -60,8 +62,8 @@ public class FilterSupplemental extends CardFilter {
 									vintageLegality = legality.getString("legality");
 								}
 							}
-
-							if (!"Legal".equals(vintageLegality) && !"Restricted".equals(vintageLegality)) continue;
+							*/
+							if (!"Legal".equals(vintageLegality) && !"Restricted".equals(vintageLegality) && !"Future".equals(vintageLegality)) continue;
 						} catch (NullPointerException e) {
 							continue;
 						}

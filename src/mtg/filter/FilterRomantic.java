@@ -9,6 +9,7 @@ public class FilterRomantic extends CardFilter {
 	public boolean isOk(JsonObject cardObject) {
 		if (cardObject.getString("name", "").toLowerCase().contains("heart")) return true;
 		if (cardObject.getString("name", "").toLowerCase().contains("love")) return true;
+		if (cardObject.getString("name", "").toLowerCase().contains("reunion")) return true;
 
 		String flavor = "";
 		try {

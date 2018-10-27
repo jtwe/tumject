@@ -31,7 +31,7 @@ public class FilterSetType extends CardFilter {
 	}
 	
 	@Override
-	public boolean isOk(JsonObject cardObject, JsonObject setObject) {
+	public boolean isOk(JsonObject cardObject, JsonObject setObject, String setId) {
 		String setType = "";
 		try {
 			setType = setObject.getString("type");

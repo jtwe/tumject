@@ -26,15 +26,22 @@ public class FilterLegality extends CardFilter {
 	
 	@Override
 	public boolean isOk(JsonObject cardObject) {
+		JsonObject legalities = cardObject.getJsonObject("legalities");
+		
+		if (legalities==null) return !toRet;
+		for (String format : formats) {
+			format = format.toLowerCase();
+			if (legalities.containsKey(format) && (legalities.getString(format).equals("Legal") || legalities.getString(format).equals("Restricted") || legalities.getString(format).equals("Future")) )  return toRet;
+		}
+		
+/*
 		JsonArray legalities = cardObject.getJsonArray("legalities");
-		
-		if (legalities==null) return false;
-		
 		for (int i=0; i<legalities.size(); i++) {
 			JsonObject jo = legalities.getJsonObject(i);
 			String format = jo.getString("format");
 			if (formats.contains(format) && (jo.getString("legality").equals("Legal") || jo.getString("legality").equals("Restricted") ) ) return toRet;
 		}
+*/
 /*		
 		for (String format : formats) {
 			if (legalities.containsKey(format) && (legalities.getString(format).equals("Legal") || legalities.getString(format).equals("Restricted")) ) return toRet;

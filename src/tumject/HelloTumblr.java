@@ -324,7 +324,8 @@ public class HelloTumblr {
 	}
 
 	public static boolean jsonNeedsUpdate(Properties props) throws IOException {
-		String urlStr = "http://mtgjson.com/json/AllSets-x.json.zip";
+//		String urlStr = "http://mtgjson.com/json/AllSets-x.json.zip";
+		String urlStr = "http://mtgjson.com/v4/json/AllSets.json.zip";
 		
 		URL u = new URL(urlStr);
 		HttpURLConnection conn = (HttpURLConnection)u.openConnection();
@@ -337,7 +338,7 @@ public class HelloTumblr {
 		Date mtgJson = new Date(conn.getLastModified());
 		System.out.println("Date mtgjson last modified: " + mtgJson);
 
-		File f = new File(props.getProperty("mtg.directory") + "AllSets-x.json");
+		File f = new File(props.getProperty("mtg.directory") + "v4/AllSets.json");
 		Date fileLastMod = new Date(f.lastModified());
 		System.out.println("Last Modified: " + fileLastMod);
 		

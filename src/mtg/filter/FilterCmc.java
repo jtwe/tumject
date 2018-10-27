@@ -16,7 +16,7 @@ public class FilterCmc extends CardFilter {
 	public boolean isOk(JsonObject cardObject) {
 		int cmc = 0;
 		try {
-			cmc = cardObject.getInt("cmc");
+			cmc = cardObject.getInt("convertedManaCost");
 		} catch (Exception e) {
 		}
 		if (dir.equals(Direction.GREATER_THAN) && cmc>num) return true;

@@ -94,6 +94,7 @@ public class MtgJson {
 
 	private boolean verbose = false;
 	private boolean semiverbose = true;
+	private boolean fetchiverbose = false;
 	
 	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;
@@ -175,7 +176,7 @@ public class MtgJson {
 		List<Card> cards = new ArrayList<Card>();
 		
 		if (jo==null) {
-			JsonReader jr = Json.createReader(new InputStreamReader(new FileInputStream(mtgDirectory + "AllSets-x.json"), "UTF8"));
+			JsonReader jr = Json.createReader(new InputStreamReader(new FileInputStream(mtgDirectory + "v4/AllSets.json"), "UTF8"));
 			jo = jr.readObject();
 		}
 		
@@ -216,14 +217,16 @@ public class MtgJson {
 				if (verbose) System.out.println("> " + c + ", picked " + set);
 				cardObject = getCardObject(jo, c.getName(), set);
 				try {
-					cardObject.getInt("multiverseid");
+					cardObject.getInt("multiverseId");
 				} catch (Exception e) {
 					if (verbose) System.out.println("Wait, no.");
 					cardObject = null;
 				}
 			}
 
-			fetchImage(this.mtgDirectory, cardObject.getInt("multiverseid"));
+			if (fetchiverbose) System.out.println("Fetching " + this.mtgDirectory + ", " + cardObject.getInt("multiverseId"));
+			fetchImage(this.mtgDirectory, cardObject.getInt("multiverseId"));
+			if (fetchiverbose) System.out.println("Fetched");
 
 			caption.append("<h2>" + captions[i] + "</h2>");
 			caption.append("<p>" + cardObject.getString("name") + "</p>");
@@ -257,15 +260,15 @@ public class MtgJson {
 				// noop
 			}
 			try {
-				caption.append("<p>{" + cardObject.getInt("loyalty") + "}</p>");
-				if (verbose) System.out.println("{" + cardObject.getInt("loyalty") + "}");
+				caption.append("<p>{" + cardObject.getString("loyalty") + "}</p>");
+				if (verbose) System.out.println("{" + cardObject.getString("loyalty") + "}");
 			} catch (Exception e) {
 				// noop
 			}
 //			if (verbose) System.out.println(cardObject);
 			if (verbose) System.out.println();
 			
-			cardDisplayInfos[i] = new CardDisplayInfo(Integer.toString(cardObject.getInt("multiverseid")), thetas[i], defX[i], defY[i]);
+			cardDisplayInfos[i] = new CardDisplayInfo(Integer.toString(cardObject.getInt("multiverseId")), thetas[i], defX[i], defY[i]);
 		}
 		
 		TableDrawing td = new TableDrawing(mtgDirectory + "images/", backgroundImageName, cardDisplayInfos);
@@ -364,7 +367,7 @@ public class MtgJson {
 	private static boolean isOk(JsonObject cardObject, String setId, JsonObject setObject, CardFilter[] filters) {
 		if (filters!=null) {
 			for (CardFilter filter : filters) {
-				if (!filter.isOk(cardObject, setObject)) return false;
+				if (!filter.isOk(cardObject, setObject, setId)) return false;
 			}
 		}
 		return true;
@@ -417,26 +420,26 @@ public class MtgJson {
 
 		// 1: rarity
 		if (filterVals[1]>1) {
-			toRet.add(new FilterRarity("Mythic Rare").setDescription("mythic rare"));
+			toRet.add(new FilterRarity("mythic").setDescription("mythic rare"));
 			toRet.add(new FilterSetType("core", "expansion").setDescription(""));
 		} else if (filterVals[1]==1) {
 			if (r.nextBoolean()) {
 				if (r.nextBoolean()) {
-					toRet.add(new FilterRarity("Common", "Uncommon").setDescription("common or uncommon"));
+					toRet.add(new FilterRarity("common", "uncommon").setDescription("common or uncommon"));
 				} else {
-					toRet.add(new FilterRarity("Uncommon", "Rare", "Mythic Rare").setDescription("uncommon, rare, or mythic rare"));
+					toRet.add(new FilterRarity("uncommon", "rare", "mythic").setDescription("uncommon, rare, or mythic rare"));
 				}
 			} else {
 				int x = r.nextInt(3);
 				switch (x) {
 				case 0:
-					toRet.add(new FilterRarity("Rare").setDescription("rare"));
+					toRet.add(new FilterRarity("rare").setDescription("rare"));
 					break;
 				case 1:
-					toRet.add(new FilterRarity("Uncommon").setDescription("uncommon"));
+					toRet.add(new FilterRarity("uncommon").setDescription("uncommon"));
 					break;
 				case 2:
-					toRet.add(new FilterRarity("Common").setDescription("common"));
+					toRet.add(new FilterRarity("common").setDescription("common"));
 					break;
 				}
 			}
@@ -466,18 +469,18 @@ public class MtgJson {
 		}
 
 		// 2: color
-		List<String> colors = Arrays.asList("White", "Blue", "Black", "Red", "Green");
+		List<String> colors = Arrays.asList("W", "U", "B", "R", "G");
 		Collections.shuffle(colors);
 		if (filterVals[2]>1) {
-			toRet.add(new FilterColor(colors.get(0)).setDescription(colors.get(0).toLowerCase() + " and " + colors.get(1).toLowerCase()));
+			toRet.add(new FilterColor(colors.get(0)).setDescription(getColorName(colors.get(0)) + " and " + getColorName(colors.get(1))));
 			toRet.add(new FilterColor(colors.get(1)).setDescription(""));
 //			toRet.add(new FilterColor(colors.get(2), colors.get(3), colors.get(4)).invert().setDescription(""));
 		} else if (filterVals[2]==1) {
 			if (r.nextBoolean()) {
-				toRet.add(new FilterColor(colors.get(0)).setDescription(colors.get(0).toLowerCase()));
+				toRet.add(new FilterColor(colors.get(0)).setDescription(getColorName(colors.get(0))));
 				toRet.add(new FilterColor(colors.get(1), colors.get(2), colors.get(3), colors.get(4)).invert().setDescription(""));
 			} else {
-				toRet.add(new FilterColor(colors.get(0), colors.get(1)).setDescription(colors.get(0).toLowerCase() + " or " + colors.get(1).toLowerCase()));
+				toRet.add(new FilterColor(colors.get(0), colors.get(1)).setDescription(getColorName(colors.get(0)) + " or " + getColorName(colors.get(1))));
 				toRet.add(new FilterColor(colors.get(2), colors.get(3), colors.get(4)).invert().setDescription(""));
 			}
 		}
@@ -507,9 +510,10 @@ public class MtgJson {
 					{"Theros block", "THS", "BNG", "JOU"},
 					{"Tarkir block", "KTK", "FRF", "DTK"},
 					{"Battle for Zendikar block", "BFZ", "OGW", "EXP"},
-					// shadows over innistrad
-					// kaladesh
-					// amonkhet
+					{"Shadows over Innistrad block", "SOI", "EMN"},
+					{"Kaladesh block", "KLD", "AER"},
+					{"Amonhket block", "AKH", "HOU"},
+					{"Ixalan block", "XLN", "RIX"},
 			};
 			String[] block = blockSets[r.nextInt(blockSets.length)];
 			List<String> sets = new ArrayList<String>();
@@ -580,6 +584,23 @@ public class MtgJson {
 		return toRet.toArray(new CardFilter[]{});
 	}
 	
+	private String getColorName(String string) {
+		switch (string.toLowerCase().charAt(0)) {
+		case 'w':
+			return "white";
+		case 'u':
+			return "blue";
+		case 'b':
+			return "black";
+		case 'r':
+			return "red";
+		case 'g':
+			return "green";
+		default:
+			return null;
+		}
+	}
+
 	public static CardFilter[] choosePresetFilters(Properties prop) {
 		boolean itsTime = false, itsXmas = false;
 
@@ -622,13 +643,13 @@ public class MtgJson {
 				case 0:
 					String[] artists = {"Christopher Rush", "Wayne Reynolds", "Drew Tucker", "Kaja Foglio", "Richard Kane Ferguson"};
 					String artist = artists[r.nextInt(artists.length)];
-					toRet = new CardFilter[]{new FilterIsRealCard(), new FilterArtist("Christopher Rush")}; // or Christopher Rush, Wayne Reynolds, Drew Tucker, Kaja Foglio, Richard Kane Ferguson
+					toRet = new CardFilter[]{new FilterIsRealCard(), new FilterArtist(artist)}; // or Christopher Rush, Wayne Reynolds, Drew Tucker, Kaja Foglio, Richard Kane Ferguson
 					break;
 				case 1:
 					toRet = new CardFilter[]{new FilterCardType("Land").setDescription("Land"), new FilterIsRealCard(), new FilterArtist("John Avon")};
 					break;
 				case 2:
-					toRet = new CardFilter[]{new FilterSet("EXP", "MPS", "MPS_AKH").setDescription("Masterpieces")};
+					toRet = new CardFilter[]{new FilterSetType("masterpiece").setDescription("Masterpieces")};
 					break;
 				case 3:
 					String[] watermarks = {"Azorius", "Dimir", "Rakdos", "Gruul", "Selesnya", "Boros", "Simic", "Orzhov", "Izzet", "Golgari"};
@@ -671,7 +692,7 @@ public class MtgJson {
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterSet("BFZ", "OGW", "EXP"), new FilterCardType("Creature", "Planeswalker")};
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterSet("BFZ", "OGW", "EXP"), new FilterCardType("Enchantment", "Artifact", "Land")};
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterSet("USG", "ULG", "UDS"), new FilterColorCount(Direction.GREATER_THAN_OR_EQUAL_TO, 2)};
-//		return new CardFilter[]{new FilterIsRealCard(), new FilterCmc(Direction.LESS_THAN_OR_EQUAL_TO, 2), new FilterColor("Blue").invert(), new FilterColorCount(Direction.LESS_THAN_OR_EQUAL_TO, 1), new FilterCardType("Land")}
+//		return new CardFilter[]{new FilterIsRealCard(), new FilterCmc(Direction.LESS_THAN_OR_EQUAL_TO, 2), new FilterColor("U").invert(), new FilterColorCount(Direction.LESS_THAN_OR_EQUAL_TO, 1), new FilterCardType("Land")}
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterCardType("Legendary"), new FilterCardType("Creature").invert()};
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterCardType("Legendary", "World"), new FilterCardType("Land", "Enchantment")};
 //		return new CardFilter[]{new FilterIsRealCard(), new FilterCmc(FilterCmc.Direction.GREATER_THAN, 3), new FilterCmc(FilterCmc.Direction.LESS_THAN, 5), new FilterTwoColorRed()};
@@ -730,11 +751,24 @@ public class MtgJson {
 		String[] props = getProperties(args[0]);
 		MtgJson mj = new MtgJson(props[0], props[1]);
 
-		JsonReader jr = Json.createReader(new InputStreamReader(new FileInputStream(props[0] + "AllSets-x.json"), "UTF8"));
+		JsonReader jr = Json.createReader(new InputStreamReader(new FileInputStream(props[0] + "v4/AllSets.json"), "UTF8"));
 		JsonObject jo = jr.readObject();
 
 		mj.setSpread(Spread.THREE_CARD);
-		List<Card> cards = mj.getCards(jo, chooseSetFilters(prop), false, false);
+//		CardFilter[] filters = chooseSetFilters(prop);
+		CardFilter[] filters = new CardFilter[1];
+		filters[0] = new FilterWatermark("Orzhov");
+/*
+		filters = new CardFilter[2];
+		filters[0] = new FilterIsRealCard();
+		filters[1] = new FilterVanilla();
+//		filters[2] = new FilterCmc(Direction.GREATER_THAN, 9);
+//		filters[3] = new FilterColorIdentity("R");
+//		filters[4] = new FilterColorIdentity("G");
+*/
+		System.out.println("Filters: " );
+		for (CardFilter f : filters) System.out.println(" " + f.getDescription());
+		List<Card> cards = mj.getCards(jo, filters, true, true);
 		int i=0; 
 		Collections.sort(cards, new Comparator<Card>(){
 			@Override

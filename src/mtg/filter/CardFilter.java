@@ -22,7 +22,7 @@ public abstract class CardFilter {
 	};
 	
 	public abstract boolean isOk(JsonObject cardObject);
-	public boolean isOk(JsonObject cardObject, JsonObject setObject) {
+	public boolean isOk(JsonObject cardObject, JsonObject setObject, String setId) {
 		return isOk(cardObject);
 	}
 	

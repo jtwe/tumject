@@ -6,7 +6,7 @@ import java.util.List;
 import javax.json.JsonObject;
 
 public class FilterCardText extends CardFilter {
-	private boolean inverted = true;
+	private boolean inverted = false;
 	private List<String> textStrings;
 
 	public FilterCardText(String... texts) {
@@ -26,10 +26,10 @@ public class FilterCardText extends CardFilter {
 	@Override
 	public boolean isOk(JsonObject cardObject) {
 		for (String s : textStrings) {
-			if (cardObject.getString("text", "").toLowerCase().contains(s.toLowerCase())) return inverted;
+			if (cardObject.getString("text", "").toLowerCase().contains(s.toLowerCase())) return !inverted;
 		}
 
-		return !inverted;
+		return inverted;
 	}
 
 	@Override

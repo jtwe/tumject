@@ -29,7 +29,7 @@ public class FilterUniqueTokens extends CardFilter {
 		if (uniqueTokenCards==null) {
 			if (jo==null) {
 				try {
-					JsonReader jr = Json.createReader(new InputStreamReader(new FileInputStream(directory + "AllSets-x.json"), "UTF8"));
+					JsonReader jr = Json.createReader(new InputStreamReader(new FileInputStream(directory + "v4/AllSets.json"), "UTF8"));
 					jo = jr.readObject();
 				} catch (UnsupportedEncodingException | FileNotFoundException e) {
 					jo = null;
@@ -54,7 +54,7 @@ public class FilterUniqueTokens extends CardFilter {
 
 					String setName = setObject.getString("name");
 					String setType = setObject.getString("type");
-					String setReleaseDate = setObject.getString("releaseDate");
+//					String setReleaseDate = setObject.getString("releaseDate");
 					if ("promo".equals(setType)) continue;
 					if (verbose) System.out.println(setName + ", " + setType);
 
@@ -65,13 +65,21 @@ public class FilterUniqueTokens extends CardFilter {
 
 						String vintageLegality = null, modernLegality = null;
 						try {
+							vintageLegality = cardObject.getJsonObject("legalities").getString("vintage");
+							/*
 							JsonArray legalities = cardObject.getJsonArray("legalities");
 							for (int i=0; i<legalities.size(); i++) {
 								String format = legalities.getJsonObject(i).getString("format");
 								if ("Vintage".equals(format)) vintageLegality = legalities.getJsonObject(i).getString("legality");
 								if ("Modern".equals(format)) modernLegality = legalities.getJsonObject(i).getString("legality");
 							}
+							*/
 							if (superverbose) System.out.println("Found??? " + cardName + ", " + vintageLegality);
+						} catch (Exception e) {
+							if (superverbose) System.out.println("Found??? " + cardName + " but exception in legality: " + e);
+						}
+						try {
+							modernLegality = cardObject.getJsonObject("legalities").getString("modern");
 						} catch (Exception e) {
 							if (superverbose) System.out.println("Found??? " + cardName + " but exception in legality: " + e);
 						}
@@ -81,8 +89,8 @@ public class FilterUniqueTokens extends CardFilter {
 							modernLegality = "Legal";
 						}
 */
-						if (vintageLegalOnly && !("Legal".equals(vintageLegality) || "Restricted".equals(vintageLegality))) continue;
-						if (modernLegalOnly && !("Legal".equals(modernLegality))) continue;
+						if (vintageLegalOnly && !("Legal".equals(vintageLegality) || "Restricted".equals(vintageLegality) || "Future".equals(vintageLegality))) continue;
+						if (modernLegalOnly && !("Legal".equals(modernLegality) || "Future".equals(modernLegality))) continue;
 
 						if (cardNames.contains(cardName)) continue;
 						cardNames.add(cardName);
