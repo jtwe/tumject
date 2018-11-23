@@ -26,7 +26,7 @@ public class FilterLongNames extends CardFilter {
 		if (longNamedCards==null) {
 			if (jo==null) {
 				try {
-					JsonReader jr = Json.createReader(new InputStreamReader(new FileInputStream(directory + "AllSets-x.json"), "UTF8"));
+					JsonReader jr = Json.createReader(new InputStreamReader(new FileInputStream(directory + "v4/AllSets.json"), "UTF8"));
 					jo = jr.readObject();
 				} catch (UnsupportedEncodingException | FileNotFoundException e) {
 					jo = null;

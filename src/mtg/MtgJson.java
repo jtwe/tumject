@@ -602,7 +602,7 @@ public class MtgJson {
 	}
 
 	public static CardFilter[] choosePresetFilters(Properties prop) {
-		boolean itsTime = false, itsXmas = false;
+		boolean itsTime = false, itsXmas = false, itsLong = false;
 
 		if (itsTime) {
 			return new CardFilter[]{new FilterCardTitle("time", "temporal", "hour", "day", "year").setDescription("time-related"), new FilterIsRealCard()};
@@ -610,6 +610,10 @@ public class MtgJson {
 		
 		if (itsXmas) {
 			return new CardFilter[]{new FilterColorIdentity("U", "B").invert().setDescription("Magical Christmasland colored"), new FilterColorIdentity("W").setDescription(""), new FilterColorIdentity("G").setDescription(""), new FilterColorIdentity("R").setDescription(""), new FilterIsRealCard()};
+		}
+		
+		if (itsLong) {
+			return new CardFilter[]{new FilterIsRealCard(), new FilterLongNames(null, prop.getProperty("mtg.directory"), 75, false)};
 		}
 
 		Random r = new Random();
@@ -757,15 +761,15 @@ public class MtgJson {
 		mj.setSpread(Spread.THREE_CARD);
 //		CardFilter[] filters = chooseSetFilters(prop);
 		CardFilter[] filters = new CardFilter[1];
-		filters[0] = new FilterWatermark("Orzhov");
-/*
+//		filters[0] = new FilterLongNames(jo, prop.getProperty("mtg.directory"), 75, false);
+
 		filters = new CardFilter[2];
 		filters[0] = new FilterIsRealCard();
-		filters[1] = new FilterVanilla();
+		filters[1] = new FilterLongNames(null, prop.getProperty("mtg.directory"), 75, false);
 //		filters[2] = new FilterCmc(Direction.GREATER_THAN, 9);
 //		filters[3] = new FilterColorIdentity("R");
 //		filters[4] = new FilterColorIdentity("G");
-*/
+
 		System.out.println("Filters: " );
 		for (CardFilter f : filters) System.out.println(" " + f.getDescription());
 		List<Card> cards = mj.getCards(jo, filters, true, true);
